@@ -1,0 +1,23 @@
+[
+  {
+    "id": "m1",
+    "name": "Paneer Tikka",
+    "description": "Delicious dish",
+    "price": 220,
+    "image": "/assets/img/plate1.png"
+  },
+  {
+    "id": "m2",
+    "name": "Mix Veg",
+    "description": "Delicious dish",
+    "price": 120,
+    "image": "/assets/img/plate2.png"
+  },
+  {
+    "id": "m3",
+    "name": "Palak Paneer",
+    "description": "Delicious dish",
+    "price": 95,
+    "image": "/assets/img/plate3.png"
+  }
+]
