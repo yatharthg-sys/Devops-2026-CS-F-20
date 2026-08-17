@@ -40,3 +40,35 @@ async function loadMenu() {
     }
 }
 loadMenu();
+
+/*==================== ANIMATED COUNTER ====================*/
+function animateCounters() {
+    const statsSection = document.getElementById('stats');
+    if (!statsSection) return;
+
+    let started = false;
+    const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && !started) {
+            started = true;
+            document.querySelectorAll('.stats__number').forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                const duration = 1600;
+                const step = target / (duration / 16);
+                let current = 0;
+
+                const timer = setInterval(() => {
+                    current += step;
+                    if (current >= target) {
+                        counter.textContent = target.toLocaleString();
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current).toLocaleString();
+                    }
+                }, 16);
+            });
+        }
+    }, { threshold: 0.4 });
+
+    observer.observe(statsSection);
+}
+animateCounters();
