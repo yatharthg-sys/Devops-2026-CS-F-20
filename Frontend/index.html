@@ -149,6 +149,36 @@
                 <p class="menu__loading">Loading menu…</p>
             </div>
         </section>
+
+       <div class="jaali-divider"></div>
+       
+       <!--========== CONTACT / RESERVATION ==========-->
+        <section class="contact section bd-container" id="contact">
+            <div class="contact__container bd-grid">
+                <div class="contact__data">
+                    <span class="section-subtitle contact__initial">Let's talk</span>
+                    <h2 class="section-title contact__initial">Reserve a table</h2>
+                    <p class="contact__description">Book a table or drop us a message — we reply within a few hours, every day.</p>
+
+                    <form id="reservation-form" class="reservation-form">
+                        <div class="form-row">
+                            <input type="text" id="res-name" placeholder="Full name" required>
+                            <input type="email" id="res-email" placeholder="Email" required>
+                        </div>
+                        <div class="form-row">
+                            <input type="tel" id="res-phone" placeholder="Phone number" required>
+                            <input type="number" id="res-guests" placeholder="Guests" min="1" max="20" required>
+                        </div>
+                        <div class="form-row">
+                            <input type="date" id="res-date" required>
+                            <input type="time" id="res-time" required>
+                        </div>
+                        <textarea id="res-message" placeholder="Any special request? (optional)" rows="3"></textarea>
+                        <button type="submit" class="button">Contact us now</button>
+                    </form>
+                </div>
+            </div>
+        </section>
     </main>
 </body>
 </html>
