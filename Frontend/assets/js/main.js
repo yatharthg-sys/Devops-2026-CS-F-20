@@ -112,3 +112,14 @@ if (resForm) {
         }
     });
 }
+
+/*==================== TOAST NOTIFICATION ====================*/
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.className = `toast toast--${type} show`;
+    setTimeout(() => {
+        toast.className = 'toast';
+    }, 4000);
+}
