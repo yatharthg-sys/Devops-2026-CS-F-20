@@ -72,3 +72,54 @@ function animateCounters() {
     observer.observe(statsSection);
 }
 animateCounters();
+
+/*==================== RESERVATION FORM ====================*/
+const resForm = document.getElementById('reservation-form');
+
+if (resForm) {
+    resForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = resForm.querySelector('button[type="submit"]');
+        const origText = btn.textContent;
+        btn.textContent = 'Booking…';
+        btn.disabled = true;
+
+        const data = {
+            name: document.getElementById('res-name').value.trim(),
+            email: document.getElementById('res-email').value.trim(),
+            phone: document.getElementById('res-phone').value.trim(),
+            guests: document.getElementById('res-guests').value,
+            date: document.getElementById('res-date').value,
+            time: document.getElementById('res-time').value,
+            message: document.getElementById('res-message').value.trim()
+        };
+
+        try {
+            const res = await fetch('http://localhost:5000/api/reservations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.error || 'Failed to book');
+            showToast(result.message || 'Table reserved successfully! See you soon. 🎉');
+            resForm.reset();
+        } catch (err) {
+            showToast(err.message || 'Could not connect to server. Please try again.', 'error');
+        } finally {
+            btn.textContent = origText;
+            btn.disabled = false;
+        }
+    });
+}
+
+/*==================== TOAST NOTIFICATION ====================*/
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.className = `toast toast--${type} show`;
+    setTimeout(() => {
+        toast.className = 'toast';
+    }, 4000);
+}
