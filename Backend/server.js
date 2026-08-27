@@ -3,8 +3,10 @@ const cors = require('cors');
 const path = require('path');
 
 const menuRoutes = require('./routes/menuRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
-
+ 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -15,6 +17,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 app.use('/api/menu', menuRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/contact', contactRoutes);
 app.use('/api/reservations', reservationRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
