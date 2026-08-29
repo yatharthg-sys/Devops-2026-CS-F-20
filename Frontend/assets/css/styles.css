@@ -608,3 +608,73 @@ section[id]{
   transform-style: preserve-3d;
   transition: transform .6s cubic-bezier(.4,.2,.2,1);
   cursor: pointer;
+}
+.menu__card:hover .menu__content{
+  transform: rotateY(180deg);
+}
+.menu__face{
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 1rem;
+  background-color: var(--container-color);
+  box-shadow: 0 8px 20px rgba(183,65,14,.15);
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  text-align: center;
+}
+.menu__face--front .menu__img{
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: .7rem;
+  margin-bottom: var(--mb-2);
+}
+.menu__face--back{
+  transform: rotateY(180deg);
+  background: linear-gradient(160deg, var(--first-color), var(--first-color-alt));
+  color: #fff;
+  justify-content: center;
+  gap: .75rem;
+}
+.menu__face--back .menu__name{ color: #fff; }
+.menu__face--back .menu__desc{
+  font-size: var(--small-font-size);
+  opacity: .9;
+  line-height: 1.6;
+}
+.menu__name{ font-size: var(--normal-font-size); font-weight: var(--font-semi-bold); color: var(--title-color); font-family: var(--heading-font); margin-bottom: .25rem;}
+.menu__preci{ font-weight: 700; color: var(--first-color); margin-top: auto; }
+.menu__face--back .menu__preci{ color: var(--gold); font-size: 1.3rem; }
+.menu__detail{ font-size: var(--small-font-size); margin-bottom: var(--mb-1); color: var(--text-color-light); }
+.menu__button{
+  border: none; cursor: pointer;
+  background: #fff;
+  color: var(--first-color);
+  padding: .65rem 1.4rem;
+  border-radius: .6rem;
+  font-weight: 600;
+  margin-top: .5rem;
+}
+.menu__button:hover{ background: var(--gold); color: #fff; }
+
+/*========== APP ==========*/
+.app__data{ text-align: center; }
+.app__description{ margin-bottom: var(--mb-5); }
+.app__stores{ margin-bottom: var(--mb-4); }
+.app__store{ width: 120px; margin: 0 var(--mb-1); }
+.app__img{ width: 230px; justify-self: center; }
+
+/*========== CONTACT / RESERVATION ==========*/
+.contact__container{ justify-items: center; }
+.contact__description{ margin-bottom: var(--mb-3); }
+.reservation-form{
+  background: var(--container-color);
+  padding: 1.75rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  max-width: 480px;
+}
+.form-row{ display: flex; gap: .75rem; }
+.reservation-form input, .reservation-form textarea{
