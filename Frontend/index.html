@@ -11,6 +11,7 @@
     <title>Shekhawat Dhaba | Authentic Rajasthani Food</title>
 </head>
 <body>
+   
     <!--========== LOADER ==========-->
 <div class="loader" id="loader">
   <div class="loader__content">
@@ -41,7 +42,47 @@
                     <li class="nav__item"><a href="#services" class="nav__link">Services</a></li>
                     <li class="nav__item"><a href="#menu" class="nav__link">Menu</a></li>
                     <li class="nav__item"><a href="#contact" class="nav__link">Contact us</a></li>
-                    <li><i class='bx bx-moon change-theme' id="theme-button"></i></li>
+                   <li>
+  <label class="bb8-toggle">
+    <input class="bb8-toggle__checkbox" type="checkbox" id="theme-button">
+    <div class="bb8-toggle__container">
+      <div class="bb8-toggle__scenery">
+        <div class="bb8-toggle__star"></div>
+        <div class="bb8-toggle__star"></div>
+        <div class="bb8-toggle__star"></div>
+        <div class="bb8-toggle__star"></div>
+        <div class="bb8-toggle__star"></div>
+        <div class="bb8-toggle__star"></div>
+        <div class="bb8-toggle__star"></div>
+        <div class="tatto-1"></div>
+        <div class="tatto-2"></div>
+        <div class="gomrassen"></div>
+        <div class="hermes"></div>
+        <div class="chenini"></div>
+        <div class="bb8-toggle__cloud"></div>
+        <div class="bb8-toggle__cloud"></div>
+        <div class="bb8-toggle__cloud"></div>
+      </div>
+      <div class="bb8">
+        <div class="bb8__head-container">
+          <div class="bb8__antenna"></div>
+          <div class="bb8__antenna"></div>
+          <div class="bb8__head"></div>
+        </div>
+        <div class="bb8__body"></div>
+      </div>
+      <div class="artificial__hidden">
+        <div class="bb8__shadow"></div>
+      </div>
+    </div>
+  </label>
+</li>
+                    <li class="nav__item">
+                        <button class="cart-toggle" id="cart-toggle">
+                            <i class='bx bx-cart'></i>
+                            <span class="cart-toggle__count" id="cart-count">0</span>
+                        </button>
+                    </li>
                 </ul>
             </div>
 
@@ -51,33 +92,57 @@
         </nav>
     </header>
 
+    <!--========== CART DRAWER ==========-->
+    <aside class="cart-drawer" id="cart-drawer">
+        <div class="cart-drawer__header">
+            <h3>Your Order</h3>
+            <i class='bx bx-x' id="cart-close"></i>
+        </div>
+        <div class="cart-drawer__items" id="cart-items">
+            <p class="cart-empty" id="cart-empty">Your cart is empty. Add something tasty!</p>
+        </div>
+        <div class="cart-drawer__footer">
+            <div class="cart-total">
+                <span>Total</span>
+                <span id="cart-total">₹0</span>
+            </div>
+            <form id="checkout-form">
+                <input type="text" id="checkout-name" placeholder="Full name" required>
+                <input type="tel" id="checkout-phone" placeholder="Phone number" required>
+                <textarea id="checkout-address" placeholder="Delivery address" rows="2" required></textarea>
+                <button type="submit" class="button cart-checkout-btn">Place Order</button>
+            </form>
+        </div>
+    </aside>
+    <div class="overlay" id="overlay"></div>
+
     <main class="l-main">
         <!--========== HOME ==========-->
-        <section class="home" id="home">
-            <div class="home__container bd-container bd-grid">
-                <div class="home__data">
-                    <span class="home__subtitle">Welcome to Jaipur's Dhaba</span>
-                    <h1 class="home__title">Authentic Rajasthani food & taste</h1>
-                    <h2 class="home__subtitle-2">Traditional spices, tandoori breads, and royal gravies cooked fresh every day.</h2>
-                    <div class="home__buttons">
-                        <a href="#menu" class="button">View Menu</a>
-                        <a href="#contact" class="button button-ghost">Reserve Table</a>
-                    </div>
-                </div>
-                <img src="assets/img/home.png" alt="Authentic Rajasthani Food" class="home__img">
-            </div>
-        </section>
-
+    <section class="home" id="home">
+    <div class="home__overlay"></div>
+    <div class="home__container bd-container">
+        <div class="home__data">
+            <span class="home__badge">Since 1998 · Jagatpura, Jaipur</span>
+            <h1 class="home__title">Where every thali tells a story<br></h1>
+            <a href="#menu" class="button">View Menu</a>
+        </div>
+    </div>
+    <div class="wave-divider">
+  <svg viewBox="0 0 1440 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path class="wave-divider__path" d="M0,64 C240,120 480,0 720,32 C960,64 1200,120 1440,64 L1440,120 L0,120 Z"></path>
+  </svg>
+</div>
+    </section>
         <!--========== ABOUT ==========-->
         <section class="about section bd-container" id="about">
             <div class="about__container bd-grid">
                 <div class="about__data">
                     <span class="section-subtitle about__initial">About us</span>
-                    <h2 class="section-title about__initial">We cook the best <br> tasty traditional food</h2>
-                    <p class="about__description">We cook the best food in the entire city, with excellent and kind customer service, the best meals and at the best price, visit us.</p>
-                    <a href="#menu" class="button">Explore history</a>
+                    <h2 class="section-title about__initial">We cook the best <br> tasty food</h2>
+                    <p class="about__description">We cook the best food in the entire city, with excellent customer service, the best meals and at the best price, visit us.</p>
+                    <a href="#contact" class="button">Explore history</a>
                 </div>
-                <img src="assets/img/about.jpg" alt="About Shekhawat Dhaba" class="about__img">
+                <img src="assets/img/about.jpg" alt="" class="about__img">
             </div>
         </section>
         <!--========== STATS ==========-->
@@ -152,6 +217,7 @@
 
        <div class="jaali-divider"></div>
        
+       
        <!--========== CONTACT / RESERVATION ==========-->
         <section class="contact section bd-container" id="contact">
             <div class="contact__container bd-grid">
@@ -180,5 +246,57 @@
             </div>
         </section>
     </main>
+
+    <!--========== FOOTER ==========-->
+    <footer class="footer section bd-container">
+        <div class="footer__container bd-grid">
+            <div class="footer__content">
+                <a href="#" class="footer__logo">Shekhawat Dhaba</a>
+                <span class="footer__description">Restaurant</span>
+                <div>
+                    <a href="#" class="footer__social"><i class='bx bxl-facebook'></i></a>
+                    <a href="#" class="footer__social"><i class='bx bxl-instagram'></i></a>
+                    <a href="#" class="footer__social"><i class='bx bxl-twitter'></i></a>
+                </div>
+            </div>
+
+            <div class="footer__content">
+                <h3 class="footer__title">Services</h3>
+                <ul>
+                    <li><a href="#" class="footer__link">Delivery</a></li>
+                    <li><a href="#" class="footer__link">Pricing</a></li>
+                    <li><a href="#" class="footer__link">Fast food</a></li>
+                    <li><a href="#contact" class="footer__link">Reserve your spot</a></li>
+                </ul>
+            </div>
+
+            <div class="footer__content">
+                <h3 class="footer__title">Information</h3>
+                <ul>
+                    <li><a href="#" class="footer__link">Event</a></li>
+                    <li><a href="#contact" class="footer__link">Contact us</a></li>
+                    <li><a href="#" class="footer__link">Privacy policy</a></li>
+                    <li><a href="#" class="footer__link">Terms of services</a></li>
+                </ul>
+            </div>
+
+            <div class="footer__content">
+                <h3 class="footer__title">Address</h3>
+                <ul>
+                    <li>Jagatpura, Jaipur</li>
+                    <li>Ramnagaria</li>
+                    <li>894964188</li>
+                    <li>shekhwatfoods@gmail.com</li>
+                </ul>
+            </div>
+        </div>
+
+        <p class="footer__copy">&#169; 2026 Shekhawat Dhaba. All rights reserved</p>
+    </footer>
+
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <script src="assets/js/main.js"></script>
+
+<div class="cursor-glow" id="cursor-glow"></div>
 </body>
 </html>
