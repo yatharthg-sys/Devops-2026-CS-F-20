@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff & Kitchen Management Portal | Shekhawat Dhaba</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Boxicons -->
+  <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
+  <!-- React 18 & Babel Standalone -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Socket.io Client -->
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body { font-family: 'Poppins', system-ui, -apple-system, sans-serif; background-color: #0f172a; color: #f8fafc; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useReducer } = React;
+
+    const API_BASE = window.location.origin.includes(':5000') 
+      ? window.location.origin + '/api' 
+      : 'http://localhost:5000/api';
+
+    // Redux-style Reducer for Centralized Application State
+    const initialState = {
+      orders: [],
+      reservations: [],
+      menu: [],
+      loading: true,
+      error: null,
+      health: null,
+      socketConnected: false
+    };
+
+    function appReducer(state, action) {
+      switch (action.type) {
+        case 'FETCH_SUCCESS':
+          return {
+            ...state,
+            orders: action.payload.orders || state.orders,
+            reservations: action.payload.reservations || state.reservations,
+            menu: action.payload.menu || state.menu,
+            health: action.payload.health || state.health,
+            loading: false
+          };
+        case 'SET_SOCKET_STATUS':
+          return { ...state, socketConnected: action.payload };
+        case 'NEW_ORDER':
+          return { ...state, orders: [action.payload, ...state.orders] };
+        case 'UPDATE_ORDER':
+          return {
+            ...state,
+            orders: state.orders.map(o => o.id === action.payload.id ? action.payload : o)
+          };
+        case 'NEW_RESERVATION':
+          return { ...state, reservations: [action.payload, ...state.reservations] };
+        case 'UPDATE_RESERVATION':
+          return {
+            ...state,
+            reservations: state.reservations.map(r => r.id === action.payload.id ? action.payload : r)
+          };
+        case 'ADD_MENU_ITEM':
+          return { ...state, menu: [action.payload, ...state.menu] };
+        case 'SET_ERROR':
+          return { ...state, error: action.payload, loading: false };
+        default:
+          return state;
+      }
+    }
+
+    // Main React SPA Component
+    function App() {
+      const [state, dispatch] = useReducer(appReducer, initialState);
+      const [activeTab, setActiveTab] = useState('orders');
+      const [statusFilter, setStatusFilter] = useState('all');
+
+      // Controlled React Form State for New Menu Item
+      const [newItem, setNewItem] = useState({
+        name: '',
+        category: 'thalis',
+        price: '',
+        description: '',
+        image: 'assets/img/plate1.png'
+      });
+      const [formMsg, setFormMsg] = useState('');
+
+      // Fetch initial data from REST API
+      const fetchData = async () => {
+        try {
+          const [ordersRes, resvRes, menuRes, healthRes] = await Promise.all([
+            fetch(`${API_BASE}/orders`),
+            fetch(`${API_BASE}/reservations`),
+            fetch(`${API_BASE}/menu`),
+            fetch(`${API_BASE}/health`)
+          ]);
+
+          const orders = await ordersRes.json();
+          const reservations = await resvRes.json();
+          const menu = await menuRes.json();
+          const health = await healthRes.json();
+
+          dispatch({
+            type: 'FETCH_SUCCESS',
+            payload: { orders, reservations, menu, health }
+          });
+        } catch (err) {
+          console.error('Fetch error:', err);
+          dispatch({ type: 'SET_ERROR', payload: 'Failed to load data from Dhaba API' });
+        }
+      };
+
+      useEffect(() => {
+        fetchData();
+
+        // Socket.io Real-time Event Subscription
+        let socket = null;
+        try {
+          if (typeof io !== 'undefined') {
+            socket = io();
+            socket.on('connect', () => dispatch({ type: 'SET_SOCKET_STATUS', payload: true }));
+            socket.on('disconnect', () => dispatch({ type: 'SET_SOCKET_STATUS', payload: false }));
+            socket.on('order:created', (order) => dispatch({ type: 'NEW_ORDER', payload: order }));
+            socket.on('order:updated', (order) => dispatch({ type: 'UPDATE_ORDER', payload: order }));
+            socket.on('reservation:created', (resv) => dispatch({ type: 'NEW_RESERVATION', payload: resv }));
+          }
+        } catch (e) {
+          console.warn('Socket connection error:', e);
+        }
+
+        return () => {
+          if (socket) socket.disconnect();
+        };
+      }, []);
+
+      // Client-Server Communication: Update Order Status
+      const handleOrderStatus = async (orderId, newStatus) => {
+        try {
+          const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            dispatch({ type: 'UPDATE_ORDER', payload: data.order });
+          }
+        } catch (err) {
+          alert('Failed to update order status');
+        }
+      };
+
+      // Client-Server Communication: Update Reservation Status
+      const handleReservationStatus = async (resvId, newStatus) => {
+        try {
+          const res = await fetch(`${API_BASE}/reservations/${resvId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            dispatch({ type: 'UPDATE_RESERVATION', payload: data.reservation });
+          }
+        } catch (err) {
+          alert('Failed to update reservation');
+        }
+      };
+
+      // Form Submission: Add New Dish
+      const handleAddDish = async (e) => {
+        e.preventDefault();
+        try {
+          const res = await fetch(`${API_BASE}/menu`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newItem)
+          });
+          const data = await res.json();
+          if (res.ok) {
+            dispatch({ type: 'ADD_MENU_ITEM', payload: data });
+            setFormMsg('Item successfully added to menu!');
+            setNewItem({ name: '', category: 'thalis', price: '', description: '', image: 'assets/img/plate1.png' });
+            setTimeout(() => setFormMsg(''), 3000);
+          }
+        } catch (err) {
+          setFormMsg('Error adding dish');
+        }
+      };
+
+      const filteredOrders = statusFilter === 'all' 
+        ? state.orders 
+        : state.orders.filter(o => o.status === statusFilter);
+
+      return (
+        <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100">
+          {/* Header */}
+          <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex flex-wrap justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <a href="index.html" className="text-amber-500 hover:text-amber-400 font-bold text-xl flex items-center gap-2">
+                <i className='bx bx-arrow-back'></i> Back to Dhaba
+              </a>
+              <span className="text-slate-500">|</span>
+              <h1 className="text-xl font-bold tracking-wide text-white">Staff & Kitchen Portal (React SPA)</h1>
+            </div>
+            <div className="flex items-center gap-4 mt-2 sm:mt-0">
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${state.socketConnected ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'}`}>
+                <span className={`w-2 h-2 rounded-full ${state.socketConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+                {state.socketConnected ? 'Live Sockets Connected' : 'Polling Fallback'}
+              </span>
+              <a href={`${API_BASE}/reports/orders/export-csv`} download className="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-xs font-medium text-slate-200 flex items-center gap-1 transition">
+                <i className='bx bx-download'></i> Export Orders CSV Stream
+              </a>
+            </div>
+          </header>
+
+          {/* Navigation Tabs */}
+          <nav className="bg-slate-800/60 border-b border-slate-700/60 px-6">
+            <div className="flex space-x-6 overflow-x-auto">
+              <button 
+                onClick={() => setActiveTab('orders')}
+                className={`py-3 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'orders' ? 'border-amber-500 text-amber-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}>
+                <i className='bx bx-food-menu text-lg'></i> Live Kitchen Orders ({state.orders.length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('reservations')}
+                className={`py-3 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'reservations' ? 'border-amber-500 text-amber-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}>
+                <i className='bx bx-calendar text-lg'></i> Table Reservations ({state.reservations.length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('menu')}
+                className={`py-3 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'menu' ? 'border-amber-500 text-amber-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}>
+                <i className='bx bx-dish text-lg'></i> Menu Inventory ({state.menu.length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('health')}
+                className={`py-3 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'health' ? 'border-amber-500 text-amber-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}>
+                <i className='bx bx-pulse text-lg'></i> Health & Observability
+              </button>
+            </div>
+          </nav>
+
+          {/* Main Body */}
+          <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+            {state.loading && (
+              <div className="text-center py-12 text-slate-400 flex items-center justify-center gap-2">
+                <i className='bx bx-loader-alt animate-spin text-2xl text-amber-500'></i>
+                <span>Loading application data...</span>
+              </div>
+            )}
+
+            {/* TAB 1: ORDERS */}
+            {!state.loading && activeTab === 'orders' && (
+              <div>
+                <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Live Kitchen Orders</h2>
+                    <p className="text-slate-400 text-sm">Real-time status updates via WebSockets</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-slate-400">Filter Status:</label>
+                    <select 
+                      value={statusFilter} 
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="bg-slate-800 border border-slate-700 text-slate-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-amber-500">
+                      <option value="all">All Orders ({state.orders.length})</option>
+                      <option value="received">Received</option>
+                      <option value="preparing">Preparing</option>
+                      <option value="out_for_delivery">Out for Delivery</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                </div>
+
+                {filteredOrders.length === 0 ? (
+                  <div className="bg-slate-800/50 rounded-xl p-12 text-center border border-slate-700/50 text-slate-400">
+                    <i className='bx bx-dish text-4xl mb-2 text-slate-500'></i>
+                    <p>No orders matching current filter.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredOrders.map(order => (
+                      <div key={order.id} className="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-start mb-3">
+                            <span className="font-mono text-xs bg-slate-700 text-amber-400 px-2.5 py-1 rounded">#{order.id}</span>
+                            <span className={`text-xs px-2.5 py-1 rounded font-semibold capitalize ${
+                              order.status === 'delivered' ? 'bg-emerald-500/20 text-emerald-400' :
+                              order.status === 'preparing' ? 'bg-amber-500/20 text-amber-400' :
+                              order.status === 'out_for_delivery' ? 'bg-blue-500/20 text-blue-400' :
+                              order.status === 'cancelled' ? 'bg-rose-500/20 text-rose-400' :
+                              'bg-purple-500/20 text-purple-400'
+                            }`}>
+                              {order.status.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+
+                          <div className="mb-4">
+                            <h4 className="font-semibold text-white">{order.customer?.name}</h4>
+                            <p className="text-xs text-slate-400"><i className='bx bx-phone'></i> {order.customer?.phone}</p>
+                            <p className="text-xs text-slate-400"><i className='bx bx-map-pin'></i> {order.customer?.address}</p>
+                          </div>
+
+                          <div className="border-t border-slate-700/60 pt-3 mb-4">
+                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Items</span>
+                            <ul className="text-sm space-y-1">
+                              {order.items?.map((item, idx) => (
+                                <li key={idx} className="flex justify-between text-slate-300">
+                                  <span>{item.qty}x {item.name}</span>
+                                  <span className="font-mono text-slate-400">₹{item.price * item.qty}</span>
+                                </li>
+                              ))}
+                            </ul>
+                            <div className="flex justify-between text-base font-bold text-amber-400 mt-2 pt-2 border-t border-slate-700/40">
+                              <span>Total</span>
+                              <span>₹{order.total}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-slate-700 pt-3 flex flex-wrap gap-1.5">
+                          {order.status === 'received' && (
+                            <button onClick={() => handleOrderStatus(order.id, 'preparing')} className="bg-amber-600 hover:bg-amber-500 text-xs px-2.5 py-1.5 rounded font-medium text-white transition">
+                              Cook / Prepare
+                            </button>
+                          )}
+                          {order.status === 'preparing' && (
+                            <button onClick={() => handleOrderStatus(order.id, 'out_for_delivery')} className="bg-blue-600 hover:bg-blue-500 text-xs px-2.5 py-1.5 rounded font-medium text-white transition">
+                              Out for Delivery
+                            </button>
+                          )}
+                          {order.status === 'out_for_delivery' && (
+                            <button onClick={() => handleOrderStatus(order.id, 'delivered')} className="bg-emerald-600 hover:bg-emerald-500 text-xs px-2.5 py-1.5 rounded font-medium text-white transition">
+                              Mark Delivered
+                            </button>
+                          )}
+                          {order.status !== 'delivered' && order.status !== 'cancelled' && (
+                            <button onClick={() => handleOrderStatus(order.id, 'cancelled')} className="bg-slate-700 hover:bg-rose-900 text-xs px-2.5 py-1.5 rounded font-medium text-rose-300 transition">
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 2: RESERVATIONS */}
+            {!state.loading && activeTab === 'reservations' && (
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2">Table Reservations</h2>
+                <p className="text-slate-400 text-sm mb-6">Manage table seatings and guest arrivals</p>
+
+                <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-slate-700/50 text-slate-300 uppercase text-xs">
+                        <tr>
+                          <th className="px-4 py-3">ID / Guest</th>
+                          <th className="px-4 py-3">Contact</th>
+                          <th className="px-4 py-3">Guests</th>
+                          <th className="px-4 py-3">Date & Time</th>
+                          <th className="px-4 py-3">Special Request</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-700">
+                        {state.reservations.map(resv => (
+                          <tr key={resv.id} className="hover:bg-slate-700/30">
+                            <td className="px-4 py-3">
+                              <span className="font-mono text-xs text-amber-400 block">#{resv.id}</span>
+                              <span className="font-medium text-white">{resv.name}</span>
+                            </td>
+                            <td className="px-4 py-3 text-slate-300">
+                              <div>{resv.phone}</div>
+                              <div className="text-xs text-slate-400">{resv.email}</div>
+                            </td>
+                            <td className="px-4 py-3 font-semibold text-white">{resv.guests} Seats</td>
+                            <td className="px-4 py-3 text-slate-300">{resv.date} at {resv.time}</td>
+                            <td className="px-4 py-3 text-slate-400 italic max-w-xs truncate">{resv.message || 'None'}</td>
+                            <td className="px-4 py-3">
+                              <span className={`text-xs px-2.5 py-1 rounded font-semibold capitalize ${
+                                resv.status === 'confirmed' ? 'bg-emerald-500/20 text-emerald-400' :
+                                resv.status === 'seated' ? 'bg-blue-500/20 text-blue-400' :
+                                resv.status === 'cancelled' ? 'bg-rose-500/20 text-rose-400' :
+                                'bg-amber-500/20 text-amber-400'
+                              }`}>
+                                {resv.status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex gap-2">
+                                {resv.status === 'pending' && (
+                                  <button onClick={() => handleReservationStatus(resv.id, 'confirmed')} className="bg-emerald-600 hover:bg-emerald-500 text-xs px-2 py-1 rounded text-white">
+                                    Confirm
+                                  </button>
+                                )}
+                                {resv.status === 'confirmed' && (
+                                  <button onClick={() => handleReservationStatus(resv.id, 'seated')} className="bg-blue-600 hover:bg-blue-500 text-xs px-2 py-1 rounded text-white">
+                                    Seat Guest
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: MENU & ADD DISH FORM */}
+            {!state.loading && activeTab === 'menu' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                  <h2 className="text-2xl font-bold text-white mb-2">Menu Catalog</h2>
+                  <p className="text-slate-400 text-sm mb-6">Current active dishes and specialties</p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {state.menu.map(item => (
+                      <div key={item.id} className="bg-slate-800 border border-slate-700 rounded-xl p-4 flex gap-4 items-center">
+                        <img src={item.image} alt={item.name} className="w-16 h-16 rounded-lg object-cover bg-slate-700" />
+                        <div className="flex-1">
+                          <span className="text-xs uppercase tracking-wider text-amber-400 font-semibold">{item.category}</span>
+                          <h4 className="font-bold text-white text-base">{item.name}</h4>
+                          <p className="text-xs text-slate-400 line-clamp-1">{item.description}</p>
+                          <span className="font-bold text-amber-400 text-sm mt-1 block">₹{item.price}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* React Form with Controlled Inputs */}
+                <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 h-fit shadow">
+                  <h3 className="text-lg font-bold text-white mb-1">Add New Menu Item</h3>
+                  <p className="text-xs text-slate-400 mb-4">React Form with dynamic state & API synchronization</p>
+
+                  {formMsg && (
+                    <div className="mb-4 p-2.5 rounded bg-emerald-500/20 text-emerald-300 text-xs border border-emerald-500/40">
+                      {formMsg}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleAddDish} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">Dish Name *</label>
+                      <input 
+                        type="text" 
+                        required
+                        value={newItem.name}
+                        onChange={e => setNewItem({ ...newItem, name: e.target.value })}
+                        placeholder="e.g. Royal Shahi Paneer"
+                        className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">Category *</label>
+                        <select 
+                          value={newItem.category}
+                          onChange={e => setNewItem({ ...newItem, category: e.target.value })}
+                          className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
+                          <option value="thalis">Thalis</option>
+                          <option value="starters">Starters</option>
+                          <option value="curries">Curries</option>
+                          <option value="breads">Breads</option>
+                          <option value="desserts">Desserts</option>
+                          <option value="beverages">Beverages</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">Price (₹) *</label>
+                        <input 
+                          type="number" 
+                          required
+                          value={newItem.price}
+                          onChange={e => setNewItem({ ...newItem, price: e.target.value })}
+                          placeholder="220"
+                          className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">Description</label>
+                      <textarea 
+                        rows="3"
+                        value={newItem.description}
+                        onChange={e => setNewItem({ ...newItem, description: e.target.value })}
+                        placeholder="Traditional preparation with saffron and desi ghee..."
+                        className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"></textarea>
+                    </div>
+
+                    <button type="submit" className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2 px-4 rounded text-sm transition">
+                      Add Dish to Catalog
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: OBSERVABILITY */}
+            {!state.loading && activeTab === 'health' && (
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2">DevOps Health & Observability</h2>
+                <p className="text-slate-400 text-sm mb-6">Live container metrics, Prometheus endpoints, and operational status</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+                    <span className="text-xs text-slate-400 uppercase">Service Status</span>
+                    <div className="text-xl font-bold text-emerald-400 mt-1 flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                      {state.health?.status || 'Active'}
+                    </div>
+                  </div>
+                  <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+                    <span className="text-xs text-slate-400 uppercase">Total Orders</span>
+                    <div className="text-2xl font-bold text-amber-400 mt-1">{state.orders.length}</div>
+                  </div>
+                  <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+                    <span className="text-xs text-slate-400 uppercase">Reservations</span>
+                    <div className="text-2xl font-bold text-blue-400 mt-1">{state.reservations.length}</div>
+                  </div>
+                  <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+                    <span className="text-xs text-slate-400 uppercase">WebSocket Status</span>
+                    <div className="text-xl font-bold text-purple-400 mt-1">
+                      {state.socketConnected ? 'Connected' : 'Disconnected'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
+                  <h3 className="text-lg font-bold text-white mb-4">Observability Links</h3>
+                  <div className="flex flex-wrap gap-4">
+                    <a href={`${API_BASE}/metrics`} target="_blank" className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm text-amber-400 flex items-center gap-2">
+                      <i className='bx bx-pulse'></i> Open Prometheus Metrics Endpoint
+                    </a>
+                    <a href={`${API_BASE}/health`} target="_blank" className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm text-emerald-400 flex items-center gap-2">
+                      <i className='bx bx-check-circle'></i> Open Health Check API
+                    </a>
+                    <a href={`${API_BASE}/reports/orders/export-csv`} download className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm text-blue-400 flex items-center gap-2">
+                      <i className='bx bx-file'></i> Download Orders Report (CSV Stream)
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
