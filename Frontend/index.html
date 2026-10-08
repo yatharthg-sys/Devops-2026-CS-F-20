@@ -13,12 +13,12 @@
 <body>
    
     <!--========== LOADER ==========-->
-<div class="loader" id="loader">
-  <div class="loader__content">
-    <img src="assets/img/logo.png" alt="Shekhawat Dhaba" class="loader__logo">
-    <span class="loader__text">Shekhawat Dhaba</span>
-  </div>
-</div>
+    <div class="loader" id="loader">
+      <div class="loader__content">
+        <img src="assets/img/logo.png" alt="Shekhawat Dhaba" class="loader__logo">
+        <span class="loader__text">Shekhawat Dhaba</span>
+      </div>
+    </div>
 
     <a href="#" class="scrolltop" id="scroll-top">
         <i class='bx bx-chevron-up scrolltop__icon'></i>
@@ -41,7 +41,8 @@
                     <li class="nav__item"><a href="#about" class="nav__link">About</a></li>
                     <li class="nav__item"><a href="#services" class="nav__link">Services</a></li>
                     <li class="nav__item"><a href="#menu" class="nav__link">Menu</a></li>
-                    <li class="nav__item"><a href="#contact" class="nav__link">Contact us</a></li>
+                    <li class="nav__item"><a href="#contact" class="nav__link">Reserve</a></li>
+                    <li class="nav__item"><a href="portal.html" class="nav__link" style="color: var(--first-color); font-weight: 600;"><i class='bx bx-desktop'></i> Staff Portal</a></li>
                    <li>
   <label class="bb8-toggle">
     <input class="bb8-toggle__checkbox" type="checkbox" id="theme-button">
@@ -202,21 +203,97 @@
     <h3 class="services__title">Delivery</h3>
     <p class="services__description">We offer our clients excellent quality services for many years, with the best and delicious food in the city.</p>
 </div>
+            </div>
         </section>
 
        <div class="jaali-divider"></div>
+
         <!--========== MENU (rendered dynamically from backend) ==========-->
         <section class="menu section bd-container" id="menu">
             <span class="section-subtitle">Special</span>
             <h2 class="section-title">Menu of the week</h2>
 
+            <!-- Interactive Category Filter Dropdown & Buttons -->
+            <div class="category-filter">
+                <div class="category-select-wrapper">
+                    <i class='bx bx-filter-alt'></i>
+                    <select id="category-dropdown" class="category-dropdown">
+                        <option value="all">All Specialties</option>
+                        <option value="thalis">Traditional Thalis</option>
+                        <option value="starters">Starters & Tandoor</option>
+                        <option value="curries">Royal Curries</option>
+                        <option value="breads">Fresh Breads</option>
+                        <option value="desserts">Desserts</option>
+                        <option value="beverages">Beverages</option>
+                    </select>
+                </div>
+                <button class="filter-btn active" data-category="all">All</button>
+                <button class="filter-btn" data-category="thalis">Thalis</button>
+                <button class="filter-btn" data-category="starters">Starters</button>
+                <button class="filter-btn" data-category="curries">Curries</button>
+                <button class="filter-btn" data-category="breads">Breads</button>
+                <button class="filter-btn" data-category="desserts">Desserts</button>
+            </div>
+
             <div class="menu__container bd-grid" id="menu-container">
                 <p class="menu__loading">Loading menu…</p>
+            </div>
+
+            <!-- Thali Comparison Table (HTML Table Specification) -->
+            <div class="thali-table-section">
+                <h3 style="text-align: center; font-family: var(--heading-font); color: var(--first-color); margin-bottom: 0.5rem;">Signature Thali Comparison</h3>
+                <p style="text-align: center; font-size: var(--small-font-size); color: var(--text-color-light);">Compare our authentic Rajasthani platters prepared with pure Desi Ghee</p>
+                <div class="table-wrapper">
+                    <table class="thali-table">
+                        <thead>
+                            <tr>
+                                <th>Thali Type</th>
+                                <th>Items Included</th>
+                                <th>Desi Ghee Dip</th>
+                                <th>Sweet Included</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Maharaja Special Thali</strong></td>
+                                <td>4 Baatis, Panchmel Dal, Gatta Curry, Ker Sangri, Kadhi, 2 Bajra Roti</td>
+                                <td>Unlimited Pure Desi Ghee</td>
+                                <td>Churma & Gulab Jamun</td>
+                                <td><strong>₹380</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Royal Dal Baati Churma</strong></td>
+                                <td>4 Baatis, Panchmel Dal, Garlic Chutney, Chaas</td>
+                                <td>100ml Pure Desi Ghee</td>
+                                <td>Shahi Churma</td>
+                                <td><strong>₹280</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Standard Marwadi Thali</strong></td>
+                                <td>Mix Veg, Dal Tadka, 4 Butter Tawa Roti, Jeera Rice, Salad</td>
+                                <td>Butter Topped</td>
+                                <td>Kheer</td>
+                                <td><strong>₹180</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Live Order Tracking Component -->
+            <div class="tracker-section">
+                <h3 style="font-family: var(--heading-font); color: var(--first-color); margin-bottom: 0.25rem;"><i class='bx bx-radar'></i> Track Your Order</h3>
+                <p style="font-size: var(--small-font-size); color: var(--text-color);">Enter your Order ID received at checkout to see real-time preparation & delivery status:</p>
+                <form id="track-order-form" class="tracker-form">
+                    <input type="text" id="track-order-id" class="tracker-input" placeholder="e.g. MS7LJ3GD" required>
+                    <button type="submit" class="button">Track</button>
+                </form>
+                <div id="tracker-result" class="tracker-result"></div>
             </div>
         </section>
 
        <div class="jaali-divider"></div>
-       
        
        <!--========== CONTACT / RESERVATION ==========-->
         <section class="contact section bd-container" id="contact">
@@ -265,7 +342,7 @@
                 <ul>
                     <li><a href="#" class="footer__link">Delivery</a></li>
                     <li><a href="#" class="footer__link">Pricing</a></li>
-                    <li><a href="#" class="footer__link">Fast food</a></li>
+                    <li><a href="portal.html" class="footer__link">Staff Portal</a></li>
                     <li><a href="#contact" class="footer__link">Reserve your spot</a></li>
                 </ul>
             </div>
@@ -294,7 +371,10 @@
         <p class="footer__copy">&#169; 2026 Shekhawat Dhaba. All rights reserved</p>
     </footer>
 
+    <!-- Libraries: jQuery, ScrollReveal, Socket.io -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://unpkg.com/scrollreveal"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="assets/js/main.js"></script>
 
 <div class="cursor-glow" id="cursor-glow"></div>

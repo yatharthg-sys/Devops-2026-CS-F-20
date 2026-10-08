@@ -1,0 +1,86 @@
+require('dotenv').config();
+const mongoose = require('mongoose');
+const MenuItem = require('../models/MenuItem');
+const { readDB } = require('../utils/db');
+
+async function seed() {
+  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/shekhawat_dhaba';
+  console.log(`Connecting to ${uri}...`);
+  await mongoose.connect(uri);
+
+  const initialMenu = [
+    {
+      id: "m1",
+      name: "Special Rajasthani Dal Baati Churma",
+      description: "Authentic wood-fired baatis dipped in pure desi ghee, served with panchmel dal and sweet churma.",
+      category: "thalis",
+      price: 280,
+      image: "/assets/img/plate1.png",
+      isAvailable: true
+    },
+    {
+      id: "m2",
+      name: "Paneer Tikka Angara",
+      description: "Fresh cottage cheese cubes marinated in spiced hung curd, roasted to perfection in clay tandoor.",
+      category: "starters",
+      price: 220,
+      image: "/assets/img/plate1.png",
+      isAvailable: true
+    },
+    {
+      id: "m3",
+      name: "Desi Ghee Gatta Curry",
+      description: "Gram flour dumplings simmered in a spiced tangy yogurt gravy infused with Rajasthani hing.",
+      category: "curries",
+      price: 180,
+      image: "/assets/img/plate2.png",
+      isAvailable: true
+    },
+    {
+      id: "m4",
+      name: "Ker Sangri Royal",
+      description: "Traditional desert berries and wild beans cooked with aromatic Rajasthani dry spices.",
+      category: "curries",
+      price: 240,
+      image: "/assets/img/plate2.png",
+      isAvailable: true
+    },
+    {
+      id: "m5",
+      name: "Bajra Roti with Desi Makhan & Gur",
+      description: "Clay tandoor millet flatbread served with churned white butter and jaggery.",
+      category: "breads",
+      price: 60,
+      image: "/assets/img/plate3.png",
+      isAvailable: true
+    },
+    {
+      id: "m6",
+      name: "Malpua Rabdi Delight",
+      description: "Golden fried pancakes soaked in saffron syrup topped with thick creamy rabdi.",
+      category: "desserts",
+      price: 120,
+      image: "/assets/img/plate3.png",
+      isAvailable: true
+    },
+    {
+      id: "m7",
+      name: "Kulhad Masala Chaas",
+      description: "Refreshing spiced buttermilk topped with roasted cumin seeds and fresh coriander.",
+      category: "beverages",
+      price: 50,
+      image: "/assets/img/plate3.png",
+      isAvailable: true
+    }
+  ];
+
+  await MenuItem.deleteMany({});
+  await MenuItem.insertMany(initialMenu);
+  console.log(`✅ Seeded ${initialMenu.length} menu items into MongoDB!`);
+  await mongoose.disconnect();
+}
+
+seed().catch(err => {
+  console.error('Seed error:', err);
+  process.exit(1);
+});
