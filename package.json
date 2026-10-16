@@ -1,0 +1,10 @@
+{
+  "name": "shekhawat-dhaba-platform",
+  "version": "1.0.0",
+  "description": "Full-stack cloud-native restaurant platform for Shekhawat Dhaba",
+  "scripts": {
+    "start": "npm start --prefix Backend",
+    "dev": "npm run dev --prefix Backend",
+    "test": "npm test --prefix Backend"
+  }
+}
