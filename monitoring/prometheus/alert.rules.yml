@@ -1,0 +1,29 @@
+groups:
+  - name: shekhawat_dhaba_alerts
+    rules:
+      - alert: ServiceDown
+        expr: up{job="shekhawat-dhaba-api"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Shekhawat Dhaba API instance is down"
+          description: "Instance {{ $labels.instance }} has been unreachable for more than 30 seconds."
+
+      - alert: HighRequestLatency
+        expr: histogram_quantile(0.95, sum(rate(shekhawat_http_request_duration_seconds_bucket[5m])) by (le)) > 1.0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API Request Latency"
+          description: "95th percentile latency is above 1 second for the past 1 minute."
+
+      - alert: HighErrorRate
+        expr: sum(rate(shekhawat_http_requests_total{status=~"5.."}[5m])) / sum(rate(shekhawat_http_requests_total[5m])) * 100 > 5
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx Server Error Rate"
+          description: "Server error rate exceeds 5% over the last 5 minutes."
