@@ -1,0 +1,279 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "System & Service Health",
+      "type": "row"
+    },
+    {
+      "id": 1,
+      "title": "App Instance Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "up{job=\"shekhawat-dhaba-api\"}",
+          "legendFormat": "App Target"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "color": "red", "text": "DOWN" }, "1": { "color": "green", "text": "HEALTHY" } }, "type": "value" }
+          ],
+          "color": { "mode": "thresholds" }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Database Connection (MongoDB)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "shekhawat_database_connected or vector(0)",
+          "legendFormat": "MongoDB"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "color": "yellow", "text": "JSON FALLBACK" }, "1": { "color": "green", "text": "CONNECTED" } }, "type": "value" }
+          ],
+          "color": { "mode": "thresholds" }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Active WebSocket Connections",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "shekhawat_active_ws_connections or vector(0)",
+          "legendFormat": "Live Clients"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Menu Catalog Size",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "shekhawat_menu_items_count or vector(7)",
+          "legendFormat": "Active Dishes"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Total Food Orders Placed",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(shekhawat_orders_total) or vector(0)",
+          "legendFormat": "Orders"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Total Table Bookings",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(shekhawat_reservations_total) or vector(0)",
+          "legendFormat": "Reservations"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "title": "Traffic & Latency Analysis (Time Series)",
+      "type": "row"
+    },
+    {
+      "id": 7,
+      "title": "HTTP Request Throughput (req/sec)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(shekhawat_http_requests_total[1m])) by (method, route)",
+          "legendFormat": "{{method}} {{route}}"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "p95 Latency - Request Duration (Histogram Quantile)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(shekhawat_http_request_duration_seconds_bucket[5m])) by (le, route))",
+          "legendFormat": "p95 {{route}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "id": 102,
+      "title": "Business Metrics & Order Value Quantiles",
+      "type": "row"
+    },
+    {
+      "id": 9,
+      "title": "Total Revenue (₹)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 15 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "shekhawat_order_revenue_inr_total or vector(0)",
+          "legendFormat": "Revenue"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyINR"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Order Value Distribution (Summary Quantiles)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 18, "x": 6, "y": 15 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "shekhawat_order_value_summary{quantile=\"0.5\"}",
+          "legendFormat": "Median (p50)"
+        },
+        {
+          "expr": "shekhawat_order_value_summary{quantile=\"0.9\"}",
+          "legendFormat": "90th Percentile (p90)"
+        },
+        {
+          "expr": "shekhawat_order_value_summary{quantile=\"0.99\"}",
+          "legendFormat": "99th Percentile (p99)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyINR"
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 21 },
+      "id": 103,
+      "title": "Node.js System Performance (Memory & CPU Gauges)",
+      "type": "row"
+    },
+    {
+      "id": 11,
+      "title": "Node.js Process Resident Memory (RSS)",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 22 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes / 1024 / 1024",
+          "legendFormat": "Resident Memory (MB)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decmbytes",
+          "max": 512
+        }
+      }
+    },
+    {
+      "id": 12,
+      "title": "Process Heap Used vs Total Heap",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 22 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "nodejs_heap_size_used_bytes / 1024 / 1024",
+          "legendFormat": "Heap Used (MB)"
+        },
+        {
+          "expr": "nodejs_heap_size_total_bytes / 1024 / 1024",
+          "legendFormat": "Heap Total (MB)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decmbytes"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "title": "Event Loop Lag (Seconds)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 22 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "nodejs_eventloop_lag_seconds",
+          "legendFormat": "Lag"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["dhaba", "prometheus", "devops", "observability"],
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "title": "Shekhawat Dhaba - Operational Observability Dashboard",
+  "uid": "shekhawat-dhaba-main"
+}
