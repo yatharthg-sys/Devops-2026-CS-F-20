@@ -1,0 +1,25 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert.rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+scrape_configs:
+  - job_name: "shekhawat-dhaba-api"
+    scrape_interval: 5s
+    metrics_path: "/api/metrics"
+    static_configs:
+      - targets: ["app:5000"]
+        labels:
+          app: "shekhawat-dhaba"
+          env: "production"
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
