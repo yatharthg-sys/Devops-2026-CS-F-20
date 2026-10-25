@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dhaba-app-service
+  namespace: shekhawat-dhaba
+  labels:
+    app: shekhawat-dhaba-app
+spec:
+  type: LoadBalancer
+  selector:
+    app: shekhawat-dhaba-app
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 5000
