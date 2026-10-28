@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shekhawat-dhaba
+  labels:
+    app.kubernetes.io/name: shekhawat-dhaba
+    app.kubernetes.io/part-of: restaurant-suite
